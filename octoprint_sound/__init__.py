@@ -9,7 +9,7 @@ import os
 from datetime import datetime, time
 from threading import Thread
 import pygame
-
+from Queue import Queue
 
 __plugin_name__ = "Sound Plugin"
 __plugin_version__ = "0.0.3"
@@ -18,11 +18,12 @@ __plugin_description__ = "Play a sound localy when receiving a '@' code instead 
 
 class SoundThread (Thread):
 
-	def __init__(self, logger, song, volume):
+	def __init__(self, logger, song, volume, callback = None):
 		Thread.__init__(self)
 		self._logger = logger
 		self._song = song
 		self._volume = volume
+		self._callback = callback
 
 	def run(self):
 		if not pygame.mixer.get_init():
@@ -36,6 +37,8 @@ class SoundThread (Thread):
 			continue
 		pygame.mixer.quit()
 		self._logger.debug("pygame.mixer off")
+		if self._callback:
+			self._callback()
 
 class SoundPlugin(octoprint.plugin.SettingsPlugin):
 	
@@ -52,9 +55,21 @@ class SoundPlugin(octoprint.plugin.SettingsPlugin):
 		self.night_end = self._settings.get_int(["night_end"])
 		self._logger.info("Initialized with {0}% from {1} to {2}...".format(self.night_volume, self.night_start, self.night_end))
 		self.default_sound = os.path.join(self._basefolder,"default.mp3")
+		self.q = Queue()
+		self.playing = False
 	
+	def play_next(self):
+		if self.q.empty():
+			self.playing = False
+		else:
+			self.q.get().start()
 	def play_pygame(self, song, volume):
-		SoundThread(self._logger, song, volume).start()
+		st = SoundThread(self._logger, song, volume, self.play_next)
+		if self.playing:
+			self.q.put(st) 
+		else:
+			self.playing = True
+			st.start()	
 		
 	def play(self, song, volume = 100):
 		mp3 = os.path.join(self.get_plugin_data_folder(), "%s.mp3"%song)
@@ -75,7 +90,7 @@ class SoundPlugin(octoprint.plugin.SettingsPlugin):
 			return start <= now or now < end
 
 	def is_mute(self):
-		return os.path.isfile( os.path.join(self.get_plugin_data_folder(), "mute") )
+		return os.path.isfile( "/home/pi/.octoprint/data/switch/mute" )
 		
 	def is_night(self):
 		return True if self.in_between(datetime.now().time(), time(self.night_start), time(self.night_end)) else False
