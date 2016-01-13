@@ -57,12 +57,13 @@ class SoundPlugin(octoprint.plugin.SettingsPlugin):
 		self.default_sound = os.path.join(self._basefolder,"default.mp3")
 		self.q = Queue()
 		self.playing = False
-	
+		
 	def play_next(self):
 		if self.q.empty():
 			self.playing = False
 		else:
 			self.q.get().start()
+			
 	def play_pygame(self, song, volume):
 		st = SoundThread(self._logger, song, volume, self.play_next)
 		if self.playing:
@@ -73,6 +74,8 @@ class SoundPlugin(octoprint.plugin.SettingsPlugin):
 		
 	def play(self, song, volume = 100):
 		mp3 = os.path.join(self.get_plugin_data_folder(), "%s.mp3"%song)
+		if not os.path.isfile(mp3):
+			mp3 = os.path.join(self._basefolder, "%s.mp3"%song)
 		if not os.path.isfile(mp3):
 			mp3 = self.default_sound
 		self.play_pygame(mp3, volume)
