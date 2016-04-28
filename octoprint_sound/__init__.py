@@ -102,7 +102,7 @@ class SoundPlugin(octoprint.plugin.SettingsPlugin):
 		if gcode and gcode == "M300":
 			param = self.remove_prefix(cmd, "M300")
 			if param and param[0] == "@":
-				if self.is_mute() and param not in ["@change", ]:
+				if self.is_mute() and param not in ["@change", "@offset", "@save_offset", "@baby_up", "@baby_down"]:
 					comm_instance._log("Mute. (%s)" % param)
 					return None,
 				sound = param[1:]
