@@ -11,10 +11,6 @@ from threading import Thread
 import pygame
 from Queue import Queue
 
-__plugin_name__ = "Sound Plugin"
-__plugin_version__ = "0.0.3"
-__plugin_description__ = "Play a sound localy when receiving a '@' code instead of the usual frequency/duration and suppress sending M300 to printer"
-
 
 class SoundThread (Thread):
 
@@ -46,14 +42,18 @@ class SoundPlugin(octoprint.plugin.SettingsPlugin):
 		return dict(
 			night_start = 20,
 			night_end = 8,
-			night_volume = 20)
+			night_volume = 20,
+			nomute = []
+			)
 					
 	def initialize(self):
 		#self._logger.setLevel(logging.DEBUG)
 		self.night_volume = self._settings.get_int(["night_volume"])
 		self.night_start = self._settings.get_int(["night_start"])
-		self.night_end = self._settings.get_int(["night_end"])
+		self.night_end = self._settings.get_int(["night_end"])		
+		self.nomute = map(( lambda x: '@' + x), self._settings.get(["nomute"]))
 		self._logger.info("Initialized with {0}% from {1} to {2}...".format(self.night_volume, self.night_start, self.night_end))
+		self._logger.info("Sounds not muted: {0}".format(self.nomute))
 		self.default_sound = os.path.join(self._basefolder,"default.mp3")
 		self.q = Queue()
 		self.playing = False
@@ -102,16 +102,39 @@ class SoundPlugin(octoprint.plugin.SettingsPlugin):
 		if gcode and gcode == "M300":
 			param = self.remove_prefix(cmd, "M300")
 			if param and param[0] == "@":
-				if self.is_mute() and param not in ["@change", "@offset", "@save_offset", "@baby_up", "@baby_down"]:
+				if self.is_mute() and param not in self.nomute:
 					comm_instance._log("Mute. (%s)" % param)
 					return None,
 				sound = param[1:]
 				volume = 100
 				if self.is_night():
 					volume = self.night_volume
+					
+				if param in self.nomute:
+					volume = self.night_volume
+					
 				comm_instance._log("Playing '%s'... (%s)" % (self.play(sound, volume), param))
 				return None,
 
+	def get_version(self):
+		return self._plugin_version
+
+	def get_update_information(self):
+		return dict(
+			octoprint_sound=dict(
+				displayName="Sound",
+				displayVersion=self._plugin_version,
+
+				# version check: github repository
+				type="github_release",
+				user="MoonshineSG",
+				repo="OctoPrint-Sound",
+				current=self._plugin_version,
+
+				# update method: pip
+				pip="https://github.com/MoonshineSG/OctoPrint-Sound/archive/{target_version}.zip"
+			)
+		)
 
 def __plugin_load__():
 	global __plugin_implementation__
@@ -119,6 +142,8 @@ def __plugin_load__():
 
 	global __plugin_hooks__
 	__plugin_hooks__ = {
-		"octoprint.comm.protocol.gcode.sending": __plugin_implementation__.suppress_m300
+		"octoprint.comm.protocol.gcode.sending": __plugin_implementation__.suppress_m300,
+		"octoprint.plugin.softwareupdate.check_config": __plugin_implementation__.get_update_information
 	}
+	
 	
