@@ -54,7 +54,7 @@ class SoundPlugin(octoprint.plugin.SettingsPlugin):
 		self.nomute = map(( lambda x: '@' + x), self._settings.get(["nomute"]))
 		self._logger.info("Initialized with {0}% from {1} to {2}...".format(self.night_volume, self.night_start, self.night_end))
 		self._logger.info("Sounds not muted: {0}".format(self.nomute))
-		self.default_sound = os.path.join(self._basefolder,"default.mp3")
+		self.default_sound = os.path.join(self._basefolder,"default","default.mp3")
 		self.q = Queue()
 		self.playing = False
 		
