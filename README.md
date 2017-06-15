@@ -1,4 +1,4 @@
-Octoprint plugin to replace printer sounds `M300 S2093 P120` with mp3 sound played by RPi
+Octoprint plugin to replace printer sounds `M300 S2093 P120` with mp3 sound played by RPi over the audio jack via an active speaker of a small amplifier (the signal is not strong enough to drive a speaker)
 
 1. add mp3 files to `.octoprint/data/sound/` to overwrite or to add new keywords
 2. add settings to `config.yaml`
