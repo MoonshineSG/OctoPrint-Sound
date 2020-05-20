@@ -1,4 +1,4 @@
-# coding=utf-8
+# -*- coding: utf-8 -*-
 from __future__ import absolute_import
 
 import octoprint.plugin
@@ -139,7 +139,8 @@ class SoundPlugin(octoprint.plugin.SettingsPlugin):
 def __plugin_load__():
 	global __plugin_implementation__
 	__plugin_implementation__ = SoundPlugin()
-
+	__plugin_pythoncompat__ = ">=2.7,<4"
+	
 	global __plugin_hooks__
 	__plugin_hooks__ = {
 		"octoprint.comm.protocol.gcode.sending": __plugin_implementation__.suppress_m300,
