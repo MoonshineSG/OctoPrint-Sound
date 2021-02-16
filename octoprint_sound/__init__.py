@@ -9,8 +9,10 @@ import os
 from datetime import datetime, time
 from threading import Thread
 import pygame
-from Queue import Queue
-
+try: 
+    import queue
+except ImportError:
+    import Queue as Queue
 
 class SoundThread (Thread):
 
