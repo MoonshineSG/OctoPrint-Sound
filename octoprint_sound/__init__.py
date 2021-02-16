@@ -12,7 +12,7 @@ import pygame
 try: 
     import queue
 except ImportError:
-    import Queue as Queue
+    import Queue as queue
 
 class SoundThread (Thread):
 
@@ -57,7 +57,7 @@ class SoundPlugin(octoprint.plugin.SettingsPlugin):
 		self._logger.info("Initialized with {0}% from {1} to {2}...".format(self.night_volume, self.night_start, self.night_end))
 		self._logger.info("Sounds not muted: {0}".format(self.nomute))
 		self.default_sound = os.path.join(self._basefolder,"default","default.mp3")
-		self.q = Queue()
+		self.q = queue.Queue()
 		self.playing = False
 		
 	def play_next(self):
