@@ -1,4 +1,4 @@
-# coding=utf-8
+# -*- coding: utf-8 -*-
 from __future__ import absolute_import
 
 import octoprint.plugin
@@ -9,8 +9,10 @@ import os
 from datetime import datetime, time
 from threading import Thread
 import pygame
-from Queue import Queue
-
+try: 
+    import queue
+except ImportError:
+    import Queue as queue
 
 class SoundThread (Thread):
 
@@ -55,7 +57,7 @@ class SoundPlugin(octoprint.plugin.SettingsPlugin):
 		self._logger.info("Initialized with {0}% from {1} to {2}...".format(self.night_volume, self.night_start, self.night_end))
 		self._logger.info("Sounds not muted: {0}".format(self.nomute))
 		self.default_sound = os.path.join(self._basefolder,"default","DEFAULT.MP3")
-		self.q = Queue()
+		self.q = queue.Queue()
 		self.playing = False
 		
 	def play_next(self):
@@ -136,10 +138,15 @@ class SoundPlugin(octoprint.plugin.SettingsPlugin):
 			)
 		)
 
+
+__plugin_name__ = "Sound"
+__plugin_description__ = "Replace M300 printer sounds with RPi sounds (mp3)."
+__plugin_pythoncompat__ = ">=2.7,<4"
+	
 def __plugin_load__():
 	global __plugin_implementation__
 	__plugin_implementation__ = SoundPlugin()
-
+	
 	global __plugin_hooks__
 	__plugin_hooks__ = {
 		"octoprint.comm.protocol.gcode.sending": __plugin_implementation__.suppress_m300,
