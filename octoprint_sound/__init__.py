@@ -54,7 +54,7 @@ class SoundPlugin(octoprint.plugin.SettingsPlugin):
 		self.nomute = map(( lambda x: '@' + x), self._settings.get(["nomute"]))
 		self._logger.info("Initialized with {0}% from {1} to {2}...".format(self.night_volume, self.night_start, self.night_end))
 		self._logger.info("Sounds not muted: {0}".format(self.nomute))
-		self.default_sound = os.path.join(self._basefolder,"default","default.mp3")
+		self.default_sound = os.path.join(self._basefolder,"default","DEFAULT.MP3")
 		self.q = Queue()
 		self.playing = False
 		
@@ -73,9 +73,9 @@ class SoundPlugin(octoprint.plugin.SettingsPlugin):
 			st.start()	
 		
 	def play(self, song, volume = 100):
-		mp3 = os.path.join(self.get_plugin_data_folder() ,"%s.mp3"%song)
+		mp3 = os.path.join(self.get_plugin_data_folder() ,"%s.MP3"%song.upper())
 		if not os.path.isfile(mp3):
-			mp3 = os.path.join(self._basefolder, "default", "%s.mp3"%song)
+			mp3 = os.path.join(self._basefolder, "default", "%s.MP3"%song.upper())
 		if not os.path.isfile(mp3):
 			mp3 = self.default_sound
 		self.play_pygame(mp3, volume)
